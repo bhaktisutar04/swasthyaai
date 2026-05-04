@@ -1,0 +1,24 @@
+# API and Validation
+fastapi
+uvicorn[standard]
+pydantic
+pydantic[email]
+python-multipart
+
+# Database and Storage
+sqlalchemy
+psycopg2-binary
+pinecone
+# Authentication
+python-jose[cryptography]
+bcrypt
+
+# AI Orchestration and LLMs
+crewai
+crewai-tools
+langchain-groq
+groq
+# Utilities and Utilities
+python-dotenv
+requests
+reportlab

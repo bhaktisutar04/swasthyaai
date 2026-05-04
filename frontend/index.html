@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwasthyaAI — AI Health Companion</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #F0FDFA 0%, #F7F8FA 50%, #FFFFFF 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px 16px;
+      max-width: 460px;
+      margin: 0 auto;
+    }
+    .auth-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: 40px 28px;
+      box-shadow: var(--shadow-lg);
+    }
+    .logo-section { text-align: center; margin-bottom: 36px; }
+    .logo-icon { font-size: 52px; margin-bottom: 8px; }
+    .logo-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.03em;
+    }
+    .logo-subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .radio-group { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      transition: all 0.2s;
+    }
+    .radio-label:has(input:checked) {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .password-wrapper { position: relative; }
+    .password-wrapper .form-input { padding-right: 44px; }
+    .toggle-password {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%); cursor: pointer;
+      font-size: 18px; background: none; border: none;
+    }
+    .terms-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: var(--text-muted);
+    }
+    .terms-row input { margin-top: 2px; accent-color: var(--primary); }
+    .divider-text {
+      text-align: center; color: var(--text-muted);
+      font-size: 13px; margin: 20px 0;
+    }
+    .form-error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 4px;
+      background: #FEF2F2;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--danger);
+    }
+
+    @media (min-width: 768px) {
+      .auth-card {
+        padding: 56px 48px;
+        box-shadow: var(--shadow-xl);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="logo-section">
+      <div class="logo-icon">🩺</div>
+      <div class="logo-title">SwasthyaAI</div>
+      <div class="logo-subtitle">AI Health Companion for India</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" id="tab-login" onclick="switchTab('login')">Login</div>
+      <div class="tab" id="tab-register" onclick="switchTab('register')">Register</div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="login-email" class="form-input"
+               placeholder="rahul@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="login-password" class="form-input"
+                 placeholder="Enter your password">
+          <button class="toggle-password" onclick="togglePassword('login-password')">👁</button>
+        </div>
+      </div>
+      <div id="login-error" class="form-error" style="display:none;margin-bottom:12px;"></div>
+      <button class="btn btn-primary" id="login-btn" onclick="handleLogin()">
+        Login
+      </button>
+      <div class="divider-text">Don't have an account?
+        <span style="color:var(--primary);cursor:pointer;font-weight:600;"
+              onclick="switchTab('register')">Sign Up</span>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="reg-name" class="form-input"
+               placeholder="Rahul Kumar">
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Age</label>
+          <input type="number" id="reg-age" class="form-input"
+                 placeholder="32" min="1" max="120">
+        </div>
+        <div class="form-group" style="flex:2">
+          <label class="form-label">Gender</label>
+          <select id="reg-gender" class="form-input">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input type="text" id="reg-city" class="form-input" placeholder="Pune">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dietary Preference</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="diet" value="veg" checked> Veg
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="diet" value="non-veg"> Non-Veg
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="diet" value="vegan"> Vegan
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred Language</label>
+        <select id="reg-language" class="form-input">
+          <option value="english">English</option>
+          <option value="hindi">Hindi</option>
+          <option value="marathi">Marathi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="reg-email" class="form-input"
+               placeholder="rahul@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="reg-password" class="form-input"
+                 placeholder="Min 8 chars, 1 uppercase, 1 special">
+          <button class="toggle-password"
+                  onclick="togglePassword('reg-password')">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="terms-row">
+          <input type="checkbox" id="reg-terms">
+          <label for="reg-terms">I agree to the Terms & Conditions
+            and Privacy Policy</label>
+        </div>
+      </div>
+      <div id="register-error"
+           class="form-error" style="display:none;margin-bottom:12px;"></div>
+      <button class="btn btn-primary" id="register-btn" onclick="handleRegister()">
+        Create Account
+      </button>
+      <div class="divider-text">Already have an account?
+        <span style="color:var(--primary);cursor:pointer;font-weight:600;"
+              onclick="switchTab('login')">Login</span>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
+

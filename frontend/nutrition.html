@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwasthyaAI — Nutrition</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .desktop-layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 260px; background: white;
+      border-right: 1px solid var(--border);
+      padding: 32px 0; position: sticky;
+      top: 0; height: 100vh; display: none;
+    }
+    .sidebar-logo {
+      padding: 0 28px 32px; font-size: 22px; font-weight: 800;
+      color: var(--primary); letter-spacing: -0.03em;
+    }
+    .main-content { flex: 1; padding: 32px 40px; max-width: 960px; margin: 0 auto; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 28px; color: var(--text-muted);
+      font-size: 14px; font-weight: 500;
+      transition: color 0.2s, background 0.2s;
+    }
+    .sidebar-item:hover { color: var(--primary); background: #F0FDFA; }
+    .sidebar-item.active {
+      color: var(--primary); background: var(--primary-glow);
+      border-right: 3px solid var(--primary); font-weight: 600;
+    }
+    @media (min-width: 768px) {
+      .sidebar { display: block; }
+      .top-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-title">Nutrition</div>
+  </div>
+
+  <div class="desktop-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">SwasthyaAI</div>
+      <nav>
+        <a href="dashboard.html" class="sidebar-item">
+          <span class="material-symbols-rounded">dashboard</span><span>Dashboard</span></a>
+        <a href="consultation.html" class="sidebar-item">
+          <span class="material-symbols-rounded">medical_services</span><span>Consultation</span></a>
+        <a href="nutrition.html" class="sidebar-item active">
+          <span class="material-symbols-rounded">nutrition</span><span>Nutrition</span></a>
+        <a href="expenses.html" class="sidebar-item">
+          <span class="material-symbols-rounded">payments</span><span>Expenses</span></a>
+        <a href="history.html" class="sidebar-item">
+          <span class="material-symbols-rounded">history</span><span>History</span></a>
+        <div class="divider"></div>
+        <a href="#" class="sidebar-item" onclick="logout()">
+          <span class="material-symbols-rounded">logout</span><span>Logout</span></a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="page">
+
+        <!-- Focus Card -->
+        <div class="card" id="focus-card">
+          <div class="card-title">
+            <span>Nutritional Focus</span>
+            <span class="material-symbols-rounded" style="font-size:18px;">target</span>
+          </div>
+          <div id="focus-content">
+            <div class="skeleton" style="height:20px; width:80%; margin-bottom:12px; border-radius:4px;"></div>
+            <div class="skeleton" style="height:20px; width:55%; border-radius:4px;"></div>
+          </div>
+        </div>
+
+        <!-- Weekly Score Chart -->
+        <div class="card">
+          <div class="card-title">
+            <span>Weekly Nutrition Score</span>
+            <span class="material-symbols-rounded" style="font-size:18px;">show_chart</span>
+          </div>
+          <div style="height:180px;">
+            <canvas id="nutrition-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Deficiencies -->
+        <div class="card" id="deficiency-card">
+          <div class="card-title">
+            <span>Nutritional Deficiencies</span>
+            <span class="material-symbols-rounded" style="font-size:18px;">warning</span>
+          </div>
+          <div id="deficiency-content">
+            <div class="skeleton" style="height:20px; width:70%; border-radius:4px;"></div>
+          </div>
+        </div>
+
+        <!-- 7-Day Meal Plan -->
+        <div class="card">
+          <div class="card-title">
+            <span>7-Day Meal Plan</span>
+            <span class="material-symbols-rounded" style="font-size:18px;">calendar_month</span>
+          </div>
+          <div id="meal-plan-content">
+            <div class="skeleton" style="height:120px; border-radius:8px;"></div>
+          </div>
+        </div>
+
+        <!-- View Report Button -->
+        <button class="btn btn-primary" style="margin-bottom:100px;"
+                onclick="window.location.href='report.html'">
+          <span class="material-symbols-rounded">description</span>
+          View Full Report
+        </button>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="bottom-nav"></div>
+  <script src="js/utils.js"></script>
+  <script src="js/nutrition.js"></script>
+</body>
+</html>
+

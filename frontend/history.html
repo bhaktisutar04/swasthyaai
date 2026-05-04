@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwasthyaAI — History & Trends</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .desktop-layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 260px; background: white;
+      border-right: 1px solid var(--border);
+      padding: 32px 0; position: sticky;
+      top: 0; height: 100vh; display: none;
+    }
+    .sidebar-logo {
+      padding: 0 28px 32px; font-size: 22px; font-weight: 800;
+      color: var(--primary); letter-spacing: -0.03em;
+    }
+    .main-content { flex: 1; padding: 32px 40px; max-width: 960px; margin: 0 auto; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 28px; color: var(--text-muted);
+      font-size: 14px; font-weight: 500;
+      transition: color 0.2s, background 0.2s;
+    }
+    .sidebar-item:hover { color: var(--primary); background: #F0FDFA; }
+    .sidebar-item.active {
+      color: var(--primary); background: var(--primary-glow);
+      border-right: 3px solid var(--primary); font-weight: 600;
+    }
+
+    .timeline-item {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 16px;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-card);
+    }
+    .timeline-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .timeline-date {
+      font-size: 12px; color: var(--text-muted);
+      margin-bottom: 8px; font-weight: 500;
+    }
+    .timeline-condition {
+      font-size: 18px; font-weight: 700;
+      color: var(--text-main); margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .timeline-meta {
+      display: flex; gap: 8px;
+      align-items: center; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .filter-row {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-family: var(--font);
+      background: white; color: var(--text-main);
+      font-weight: 500;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .search-input {
+      flex: 1; padding: 10px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-family: var(--font);
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .load-more-btn {
+      width: 100%; padding: 14px;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; color: var(--primary);
+      margin-bottom: 100px;
+      transition: all 0.2s;
+      font-family: var(--font);
+    }
+    .load-more-btn:hover {
+      background: #F0FDFA;
+      border-color: var(--primary);
+    }
+
+    .trend-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-mini {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+    }
+    .stat-mini-value {
+      font-size: 28px; font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+    }
+    .stat-mini-label {
+      font-size: 12px; color: var(--text-muted);
+      margin-top: 4px; font-weight: 500;
+    }
+
+    @media (min-width: 768px) {
+      .sidebar { display: block; }
+      .top-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar-title">History</div>
+  </div>
+
+  <div class="desktop-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">SwasthyaAI</div>
+      <nav>
+        <a href="dashboard.html" class="sidebar-item">
+          <span class="material-symbols-rounded">dashboard</span><span>Dashboard</span></a>
+        <a href="consultation.html" class="sidebar-item">
+          <span class="material-symbols-rounded">medical_services</span><span>Consultation</span></a>
+        <a href="nutrition.html" class="sidebar-item">
+          <span class="material-symbols-rounded">nutrition</span><span>Nutrition</span></a>
+        <a href="expenses.html" class="sidebar-item">
+          <span class="material-symbols-rounded">payments</span><span>Expenses</span></a>
+        <a href="history.html" class="sidebar-item active">
+          <span class="material-symbols-rounded">history</span><span>History</span></a>
+        <div class="divider"></div>
+        <a href="#" class="sidebar-item" onclick="logout()">
+          <span class="material-symbols-rounded">logout</span><span>Logout</span></a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="page">
+
+        <!-- Tab Toggle -->
+        <div class="tabs">
+          <div class="tab active" id="tab-timeline" onclick="switchTab('timeline')">
+            <span class="material-symbols-rounded" style="font-size:18px;">timeline</span>
+            Timeline
+          </div>
+          <div class="tab" id="tab-trends" onclick="switchTab('trends')">
+            <span class="material-symbols-rounded" style="font-size:18px;">trending_up</span>
+            Trends
+          </div>
+        </div>
+
+        <!-- TIMELINE TAB -->
+        <div id="timeline-section">
+
+          <!-- Filters -->
+          <div class="filter-row">
+            <input type="text" class="search-input"
+                   id="search-input" placeholder="Search conditions..."
+                   oninput="filterTimeline()">
+            <select class="filter-select" id="filter-status"
+                    onchange="filterTimeline()">
+              <option value="">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="in_progress">In Progress</option>
+              <option value="follow_up_pending">Follow-up Pending</option>
+            </select>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="total-count">--</div>
+              <div class="stat-mini-label">Total Consultations</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="completed-count">--</div>
+              <div class="stat-mini-label">Completed</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="followup-count">--</div>
+              <div class="stat-mini-label">Follow-ups</div>
+            </div>
+          </div>
+
+          <!-- Timeline list -->
+          <div id="timeline-list">
+            <div class="skeleton" style="height:100px; margin-bottom:16px; border-radius:12px;"></div>
+            <div class="skeleton" style="height:100px; margin-bottom:16px; border-radius:12px;"></div>
+            <div class="skeleton" style="height:100px; border-radius:12px;"></div>
+          </div>
+
+          <!-- Load more -->
+          <button class="load-more-btn" id="load-more-btn"
+                  onclick="loadMore()" style="display:none;">
+            Load More ↓
+          </button>
+
+        </div>
+
+        <!-- TRENDS TAB -->
+        <div id="trends-section" style="display:none;">
+
+          <!-- Range selector -->
+          <div style="margin-bottom:24px;">
+            <select class="filter-select" id="trend-range"
+                    onchange="loadTrends()">
+              <option value="1m">Last 1 Month</option>
+              <option value="3m">Last 3 Months</option>
+              <option value="6m">Last 6 Months</option>
+              <option value="1y">Last 1 Year</option>
+            </select>
+          </div>
+
+          <!-- Nutrition trend chart -->
+          <div class="trend-card">
+            <div class="card-title">
+              <span>Nutrition Score Trend</span>
+              <span class="material-symbols-rounded" style="font-size:18px;">show_chart</span>
+            </div>
+            <div style="height:200px;">
+              <canvas id="nutrition-trend-chart"></canvas>
+            </div>
+            <div id="nutrition-trend-summary"
+                 style="margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
+          </div>
+
+          <!-- Expense trend chart -->
+          <div class="trend-card">
+            <div class="card-title">
+              <span>Medical Expense Trend</span>
+              <span class="material-symbols-rounded" style="font-size:18px;">payments</span>
+            </div>
+            <div style="height:200px;">
+              <canvas id="expense-trend-chart"></canvas>
+            </div>
+            <div id="expense-trend-summary"
+                 style="margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="bottom-nav"></div>
+  <script src="js/utils.js"></script>
+  <script src="js/history.js"></script>
+</body>
+</html>

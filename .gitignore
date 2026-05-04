@@ -1,0 +1,24 @@
+# Environment files - never upload these
+backend/.env
+.env
+
+# Database file
+backend/swasthyaai.db
+
+# Generated PDFs
+backend/pdfs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db

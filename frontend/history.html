@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SwasthyaAI — History & Trends</title>
+  <title>SwasthyaAI — History</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     .desktop-layout { display: flex; min-height: 100vh; }
     .sidebar {
@@ -169,19 +169,8 @@
     <main class="main-content">
       <div class="page">
 
-        <!-- Tab Toggle -->
-        <div class="tabs">
-          <div class="tab active" id="tab-timeline" onclick="switchTab('timeline')">
-            <span class="material-symbols-rounded" style="font-size:18px;">timeline</span>
-            Timeline
-          </div>
-          <div class="tab" id="tab-trends" onclick="switchTab('trends')">
-            <span class="material-symbols-rounded" style="font-size:18px;">trending_up</span>
-            Trends
-          </div>
-        </div>
 
-        <!-- TIMELINE TAB -->
+
         <div id="timeline-section">
 
           <!-- Filters -->
@@ -229,47 +218,7 @@
 
         </div>
 
-        <!-- TRENDS TAB -->
-        <div id="trends-section" style="display:none;">
 
-          <!-- Range selector -->
-          <div style="margin-bottom:24px;">
-            <select class="filter-select" id="trend-range"
-                    onchange="loadTrends()">
-              <option value="1m">Last 1 Month</option>
-              <option value="3m">Last 3 Months</option>
-              <option value="6m">Last 6 Months</option>
-              <option value="1y">Last 1 Year</option>
-            </select>
-          </div>
-
-          <!-- Nutrition trend chart -->
-          <div class="trend-card">
-            <div class="card-title">
-              <span>Nutrition Score Trend</span>
-              <span class="material-symbols-rounded" style="font-size:18px;">show_chart</span>
-            </div>
-            <div style="height:200px;">
-              <canvas id="nutrition-trend-chart"></canvas>
-            </div>
-            <div id="nutrition-trend-summary"
-                 style="margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
-          </div>
-
-          <!-- Expense trend chart -->
-          <div class="trend-card">
-            <div class="card-title">
-              <span>Medical Expense Trend</span>
-              <span class="material-symbols-rounded" style="font-size:18px;">payments</span>
-            </div>
-            <div style="height:200px;">
-              <canvas id="expense-trend-chart"></canvas>
-            </div>
-            <div id="expense-trend-summary"
-                 style="margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
-          </div>
-
-        </div>
 
       </div>
     </main>

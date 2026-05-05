@@ -68,7 +68,7 @@ class Consultation(Base):
     monthly_total = Column(Float)
     expense_breakdown = Column(Text)
     savings_estimate = Column(Float)
-    pdf_path = Column(String)
+    pdf_path = Column(Text)
     pdf_generated_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="consultations")

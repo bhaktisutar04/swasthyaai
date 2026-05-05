@@ -5,7 +5,7 @@ import requests
 import threading
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from db.database import get_db, Consultation, User, SessionLocal
@@ -305,7 +305,8 @@ def get_report(session_id: str,
                 "savings_estimate": profile.get("savings_estimate", 0),
                 "savings_disclaimer": "Estimated projection. Actual savings may vary."
             },
-            "pdf_available": bool(profile.get("pdf_path"))
+            "pdf_available": bool(profile.get("pdf_path")),
+            "pdf_path": profile.get("pdf_path")
         }}
     
     # Fallback to database
@@ -351,7 +352,8 @@ def get_report(session_id: str,
             "savings_estimate": consultation.savings_estimate or 0,
             "savings_disclaimer": "Estimated projection. Actual savings may vary."
         },
-        "pdf_available": bool(consultation.pdf_path)
+        "pdf_available": bool(consultation.pdf_path),
+        "pdf_path": consultation.pdf_path or None
     }}
 
 @router.get("/report/{session_id}/pdf")
@@ -364,14 +366,22 @@ def get_pdf(session_id: str,
         raise HTTPException(status_code=403, detail="Unauthorized")
     
     # Check session memory for latest pdf_path
+    pdf_path = None
     if session_id in sessions:
         pdf_path = sessions[session_id].get("pdf_path")
-        if pdf_path and os.path.exists(pdf_path):
-            return FileResponse(pdf_path, media_type="application/pdf")
     
-    pdf_path = record.pdf_path
-    if not pdf_path or not os.path.exists(pdf_path):
+    if not pdf_path:
+        pdf_path = record.pdf_path
+        
+    if not pdf_path:
         raise HTTPException(status_code=404,
             detail="PDF not yet generated. Please wait 1-2 minutes after consultation.")
+            
+    if pdf_path.startswith("http://") or pdf_path.startswith("https://"):
+        return {"success": True, "url": pdf_path}
+    
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=404,
+            detail="PDF file not found on server.")
+            
     return FileResponse(pdf_path, media_type="application/pdf")
-

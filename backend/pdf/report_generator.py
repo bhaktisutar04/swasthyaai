@@ -1,5 +1,7 @@
 import os
 import json
+import cloudinary
+import cloudinary.uploader
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -11,6 +13,12 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 load_dotenv()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 
 # Define colors
 PRIMARY = HexColor("#2D7DD2")
@@ -176,21 +184,6 @@ def generate_report(patient_profile: dict) -> str:
                 story.append(Paragraph(
                     f"<b>Nutritional Focus:</b> {nutritional_focus}",
                     normal_style))
-            if deficiencies:
-                d_data = [["Nutrient", "Current", "Required"]]
-                for d in deficiencies:
-                    d_data.append([
-                        d.get("nutrient", ""),
-                        str(d.get("current_mg", "")),
-                        str(d.get("required_mg", ""))
-                    ])
-                t4 = Table(d_data)
-                t4.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), LIGHT_GRAY),
-                    ('GRID', (0,0), (-1,-1), 0.5, black),
-                ]))
-                story.append(t4)
-                story.append(Spacer(1, 0.1*inch))
             for day_info in meal_plan[:2]:
                 story.append(Paragraph(
                     f"<b>Day {day_info.get('day','')} - {day_info.get('day_name','')}</b>",
@@ -276,7 +269,39 @@ def generate_report(patient_profile: dict) -> str:
                 normal_style))
 
         doc.build(story, onFirstPage=add_footer, onLaterPages=add_footer)
-        return pdf_path
+        
+        try:
+            session_id = patient_profile.get('session_id', 'unknown')
+            user_id = patient_profile.get('user_id', 'unknown')
+            
+            # upload_result = cloudinary.uploader.upload(
+            #     pdf_path,
+            #     resource_type="image",
+            #     folder="swasthyaai_reports",
+            #     public_id=f"report_{user_id}_{session_id}",
+            #     overwrite=True,
+            #     invalidate=True, 
+            # )
+            upload_result = cloudinary.uploader.upload(
+                pdf_path,
+                resource_type="raw",
+                folder="swasthyaai_reports",
+                public_id=f"report_{user_id}_{session_id}.pdf",
+                overwrite=True,
+                invalidate=True,
+                access_mode="public"
+            )
+            pdf_url = upload_result.get("secure_url")
+            
+            # Delete local file after upload to save disk space
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+                
+            return pdf_url
+        except Exception as e:
+            print(f"Cloudinary upload failed: {e}")
+            # Fall back to local path if Cloudinary fails
+            return pdf_path
         
     except Exception as e:
         print(f"Error generating PDF report: {e}")

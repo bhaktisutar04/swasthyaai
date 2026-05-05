@@ -43,18 +43,24 @@ async function loadExpenses() {
       // Recent expenses list (from breakdown)
       renderExpensesList(d.breakdown);
     }
-  } catch(err) {
+  } catch (err) {
     console.error("Expenses load error:", err);
   }
 }
 
+let pieChartInstance = null;
+let barChartInstance = null;
+
 function renderPieChart(breakdown) {
   const labels = Object.keys(breakdown || {});
   const values = Object.values(breakdown || {});
-  const colors = ["#1A73E8","#E8A838","#34A853","#EA4335","#9334E6"];
+  const colors = ["#1A73E8", "#E8A838", "#34A853", "#EA4335", "#9334E6"];
 
-  const ctx = document.getElementById("pie-chart").getContext("2d");
-  new Chart(ctx, {
+  const canvas = document.getElementById("pie-chart");
+  if (!canvas) return;
+  if (pieChartInstance) pieChartInstance.destroy();
+  const ctx = canvas.getContext("2d");
+  pieChartInstance = new Chart(ctx, {
     type: "doughnut",
     data: {
       labels,
@@ -68,8 +74,10 @@ function renderPieChart(breakdown) {
     options: {
       responsive: true,
       plugins: {
-        legend: { position: "bottom",
-                  labels: { font: { size: 11 } } }
+        legend: {
+          position: "bottom",
+          labels: { font: { size: 11 } }
+        }
       }
     }
   });
@@ -77,19 +85,22 @@ function renderPieChart(breakdown) {
 
 function renderBarChart(trend) {
   if (!trend || trend.length === 0) return;
-  
+
   // Only show months with actual data
   const realData = trend.filter(t => t.total > 0);
-  
+
   if (realData.length === 0) {
     document.getElementById("bar-chart")
-      .parentElement.innerHTML = 
+      .parentElement.innerHTML =
       '<div class="text-muted" style="padding:16px;">No expense data yet.</div>';
     return;
   }
 
-  const ctx = document.getElementById("bar-chart").getContext("2d");
-  new Chart(ctx, {
+  const canvas2 = document.getElementById("bar-chart");
+  if (!canvas2) return;
+  if (barChartInstance) barChartInstance.destroy();
+  const ctx = canvas2.getContext("2d");
+  barChartInstance = new Chart(ctx, {
     type: "bar",
     data: {
       labels: realData.map(t => t.month),
@@ -114,7 +125,7 @@ function renderBarChart(trend) {
 function renderExpensesList(breakdown) {
   const el = document.getElementById("expenses-list");
   const entries = Object.entries(breakdown || {})
-    .filter(([,v]) => v > 0);
+    .filter(([, v]) => v > 0);
 
   if (entries.length === 0) {
     el.innerHTML = `
@@ -183,10 +194,9 @@ async function saveExpense() {
     } else {
       showError("expense-error", data.message || "Failed to save expense.");
     }
-  } catch(err) {
+  } catch (err) {
     showError("expense-error", "Network error. Please try again.");
   }
 }
 
 loadExpenses();
-

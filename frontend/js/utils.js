@@ -47,6 +47,9 @@ async function logout() {
 }
 
 async function apiFetch(endpoint, options = {}) {
+  if (endpoint.startsWith('http')) {
+    return fetch(endpoint, options);
+  }
   const token = getToken();
   const headers = {
     "Content-Type": "application/json",
@@ -220,4 +223,3 @@ function getCurrentDateString() {
     month: "long", day: "numeric"
   });
 }
-

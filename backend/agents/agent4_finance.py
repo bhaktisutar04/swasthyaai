@@ -1,10 +1,12 @@
 import os
 import json
-import sqlite3
 from dotenv import load_dotenv
 from crewai import Agent, Task
 from crewai.tools import tool
 from crewai import LLM
+from db.database import get_db, Expense
+from sqlalchemy.orm import Session
+from datetime import datetime
 
 load_dotenv()
 
@@ -16,34 +18,38 @@ llm = LLM(
     temperature=0.3
 )
 
+def get_expense_summary(user_id: int, db: Session):
+    now = datetime.utcnow()
+    m = now.month - 1
+    y = now.year
+    if m <= 0:
+        m += 12
+        y -= 1
+    try:
+        one_month_ago = now.replace(year=y, month=m)
+    except ValueError:
+        one_month_ago = now.replace(year=y, month=m, day=28)
+        
+    expenses = db.query(Expense).filter(
+        Expense.user_id == user_id,
+        Expense.expense_date >= one_month_ago
+    ).all()
+    return expenses
+
 @tool("expense_summary_tool")
 def expense_summary_tool(user_id: int) -> dict:
     """Connects to SQL DB, queries expenses from the last month, and returns sum and breakdown."""
     try:
-        db_url = os.getenv("DATABASE_URL", "sqlite:///./swasthyaai.db")
-        db_path = db_url.replace("sqlite:///", "")
-        
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        
-        query = """
-        SELECT category, SUM(amount) as total 
-        FROM expenses 
-        WHERE user_id = ? AND expense_date >= date('now', '-1 month')
-        GROUP BY category
-        """
-        cursor.execute(query, (user_id,))
-        rows = cursor.fetchall()
+        db = next(get_db())
+        expenses = get_expense_summary(user_id, db)
         
         breakdown = {}
         total = 0.0
-        for category, amt in rows:
-            if category and amt:
-                breakdown[category] = float(amt)
-                total += float(amt)
+        for exp in expenses:
+            if exp.category and exp.amount:
+                breakdown[exp.category] = breakdown.get(exp.category, 0.0) + float(exp.amount)
+                total += float(exp.amount)
             
-        conn.close()
-        
         return {"monthly_total": total, "expense_breakdown": breakdown}
         
     except Exception as e:

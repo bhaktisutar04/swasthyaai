@@ -45,6 +45,7 @@ async function loadReport() {
     }
   } catch (err) {
     console.error("Report error:", err);
+    showError("loading-state", "Error loading report. Please try again.");
   }
 }
 
@@ -53,7 +54,8 @@ function renderReport(d) {
   document.getElementById("session-badge").textContent = d.session_id || "";
 
   // Report header
-  const primaryCondition = d.diagnosis?.conditions?.[0]?.name || "Health Assessment";
+  const primaryCondition = d.diagnosis?.conditions?.[0]?.name || 
+                           (typeof d.diagnosis?.conditions?.[0] === 'string' ? d.diagnosis.conditions[0] : "Health Assessment");
   document.getElementById("report-title").textContent = primaryCondition;
   document.getElementById("report-subtitle").textContent =
     `${d.patient?.name || ""} • ${formatDate(d.session_date)} • ${d.patient?.city || ""}`;
@@ -72,6 +74,9 @@ function renderReport(d) {
     seeDoctorBadge.textContent = "⚠️ Doctor Visit Recommended";
     seeDoctorBadge.style.background = "rgba(255,255,255,0.2)";
     seeDoctorBadge.style.color = "white";
+    seeDoctorBadge.style.display = "inline-block";
+  } else {
+    seeDoctorBadge.style.display = "none";
   }
 
   renderSymptoms(d.symptoms);
@@ -82,7 +87,10 @@ function renderReport(d) {
 
 function renderSymptoms(s) {
   if (!s) return;
-  document.getElementById("symptoms-content").innerHTML = `
+  const symptomsEl = document.getElementById("symptoms-content");
+  if (!symptomsEl) return;
+
+  symptomsEl.innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
       ${(s.list || []).map(sym =>
     `<span class="badge badge-primary">${sym}</span>`
@@ -97,41 +105,52 @@ function renderSymptoms(s) {
 }
 
 function renderDiagnosis(d) {
+  const diagnosisEl = document.getElementById("diagnosis-content");
+  if (!diagnosisEl) return;
+
   if (!d) {
-    document.getElementById("diagnosis-content").innerHTML =
-      `<div class="text-muted">Diagnosis data not yet available.</div>`;
+    diagnosisEl.innerHTML = `<div class="text-muted">Diagnosis data not yet available.</div>`;
     return;
   }
 
-  const conditions = (d.conditions || []).map(c => `
-    <div class="condition-item" style="border-left-color: ${c.likelihood === 'most_likely' ? 'var(--primary)' :
-      c.likelihood === 'possible' ? 'var(--warning)' : 'var(--neutral)'}">
-      <div class="condition-name">${c.name}</div>
-      <div class="condition-meta">
-        <span class="badge ${c.likelihood === 'most_likely' ? 'badge-primary' :
-      c.likelihood === 'possible' ? 'badge-warning' : ''}">
-          ${c.likelihood?.replace('_', ' ') || ""}
-        </span>
-        <span style="font-size:12px;color:var(--text-muted);">
-          ${c.confidence || 0}% confidence
-        </span>
+  const conditions = (d.conditions || []).map(c => {
+    const isString = typeof c === 'string';
+    const name = isString ? c : c.name;
+    const likelihood = isString ? 'possible' : (c.likelihood || 'possible');
+    const confidence = isString ? 0 : (c.confidence || 0);
+    const reasoning = isString ? null : c.reasoning;
+
+    return `
+      <div class="condition-item" style="border-left-color: ${likelihood === 'most_likely' ? 'var(--primary)' :
+        likelihood === 'possible' ? 'var(--warning)' : 'var(--neutral)'}">
+        <div class="condition-name">${name}</div>
+        <div class="condition-meta">
+          <span class="badge ${likelihood === 'most_likely' ? 'badge-primary' :
+        likelihood === 'possible' ? 'badge-warning' : ''}">
+            ${likelihood.replace('_', ' ')}
+          </span>
+          ${confidence > 0 ? `
+          <span style="font-size:12px;color:var(--text-muted);">
+            ${confidence}% confidence
+          </span>` : ""}
+        </div>
+        ${confidence > 0 ? `
+        <div class="confidence-bar">
+          <div class="confidence-fill" style="width:${confidence}%"></div>
+        </div>` : ""}
+        ${reasoning ?
+        `<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
+            ${reasoning}</div>` : ""}
       </div>
-      <div class="confidence-bar">
-        <div class="confidence-fill"
-             style="width:${c.confidence || 0}%"></div>
-      </div>
-      ${c.reasoning ?
-      `<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-          ${c.reasoning}</div>` : ""}
-    </div>
-  `).join("");
+    `;
+  }).join("");
 
   const medicines = (d.medicines || []).map(m => `
     <div class="medicine-item">
       <div class="medicine-icon">💊</div>
       <div>
-        <div class="medicine-name">${m.name}</div>
-        <div class="medicine-use">${m.use}</div>
+        <div class="medicine-name">${m.name || m}</div>
+        <div class="medicine-use">${m.use || ""}</div>
       </div>
     </div>
   `).join("");
@@ -144,7 +163,7 @@ function renderDiagnosis(d) {
     `<div style="padding:6px 0;font-size:14px;color:var(--danger);">🚩 ${r}</div>`
   ).join("");
 
-  document.getElementById("diagnosis-content").innerHTML = `
+  diagnosisEl.innerHTML = `
     ${conditions.length ? conditions :
       '<div class="text-muted">No conditions identified yet.</div>'}
 
@@ -181,8 +200,11 @@ function renderDiagnosis(d) {
 }
 
 function renderNutrition(n) {
+  const nutritionEl = document.getElementById("nutrition-content");
+  if (!nutritionEl) return;
+
   if (!n || !n.meal_plan || n.meal_plan.length === 0) {
-    document.getElementById("nutrition-content").innerHTML =
+    nutritionEl.innerHTML =
       `<div class="text-muted">
         Nutrition plan not yet generated.
         Complete a full consultation to get your meal plan.
@@ -204,7 +226,7 @@ function renderNutrition(n) {
     </div>
   `).join("");
 
-  document.getElementById("nutrition-content").innerHTML = `
+  nutritionEl.innerHTML = `
     ${n.nutritional_focus ? `
       <div style="background:var(--primary-light);padding:12px;
                   border-radius:var(--radius-sm);margin-bottom:16px;
@@ -237,39 +259,44 @@ function renderMealDay(index, mealPlan) {
   const day = mealPlan[index];
   if (!day) return;
 
-  document.getElementById("day-label").textContent =
-    `Day ${day.day} — ${day.day_name}`;
-  document.getElementById("prev-day").disabled = index === 0;
-  document.getElementById("next-day").disabled =
-    index === mealPlan.length - 1;
+  const dayLabel = document.getElementById("day-label");
+  const prevBtn = document.getElementById("prev-day");
+  const nextBtn = document.getElementById("next-day");
+  const mealPlanDay = document.getElementById("meal-plan-day");
 
-  const slots = ["breakfast", "mid_morning", "lunch", "evening_snack", "dinner"];
-  const labels = {
-    breakfast: "🌅 Breakfast",
-    mid_morning: "🍎 Mid Morning",
-    lunch: "🍛 Lunch",
-    evening_snack: "☕ Evening Snack",
-    dinner: "🌙 Dinner"
-  };
+  if (dayLabel) dayLabel.textContent = `Day ${day.day} — ${day.day_name}`;
+  if (prevBtn) prevBtn.disabled = index === 0;
+  if (nextBtn) nextBtn.disabled = index === mealPlan.length - 1;
 
-  document.getElementById("meal-plan-day").innerHTML = slots.map(slot => {
-    const meal = day[slot];
-    if (!meal) return "";
-    return `
-      <div class="meal-slot">
-        <div class="meal-slot-label">${labels[slot]}</div>
-        <div class="meal-slot-items">
-          ${(meal.items || []).join(", ")}
+  if (mealPlanDay) {
+    const slots = ["breakfast", "mid_morning", "lunch", "evening_snack", "dinner"];
+    const labels = {
+      breakfast: "🌅 Breakfast",
+      mid_morning: "🍎 Mid Morning",
+      lunch: "🍛 Lunch",
+      evening_snack: "☕ Evening Snack",
+      dinner: "🌙 Dinner"
+    };
+
+    mealPlanDay.innerHTML = slots.map(slot => {
+      const meal = day[slot];
+      if (!meal) return "";
+      return `
+        <div class="meal-slot">
+          <div class="meal-slot-label">${labels[slot]}</div>
+          <div class="meal-slot-items">
+            ${(meal.items || []).join(", ")}
+          </div>
+          ${meal.nutrients ? `
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+              ${Object.entries(meal.nutrients)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(" • ")}
+            </div>` : ""}
         </div>
-        ${meal.nutrients ? `
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-            ${Object.entries(meal.nutrients)
-          .map(([k, v]) => `${k}: ${v}`)
-          .join(" • ")}
-          </div>` : ""}
-      </div>
-    `;
-  }).join("");
+      `;
+    }).join("");
+  }
 }
 
 function changeDay(direction) {
@@ -281,9 +308,10 @@ function changeDay(direction) {
 }
 
 function renderFinance(f, medicines = []) {
+  const financeEl = document.getElementById("finance-content");
+  if (!financeEl) return;
   if (!f) {
-    document.getElementById("finance-content").innerHTML =
-      `<div class="text-muted">No expense data available.</div>`;
+    financeEl.innerHTML = `<div class="text-muted">No expense data available.</div>`;
     return;
   }
 
@@ -295,7 +323,7 @@ function renderFinance(f, medicines = []) {
     </div>
   `).join("");
 
-  document.getElementById("finance-content").innerHTML = `
+  financeEl.innerHTML = `
     <div style="text-align:center;padding:16px 0;margin-bottom:16px;
                 border-bottom:1px solid var(--border);">
       <div style="font-size:36px;font-weight:800;color:var(--primary);">
@@ -322,37 +350,72 @@ function renderFinance(f, medicines = []) {
   `;
 }
 
-// Collapsible sections
 function toggleSection(section) {
   const body = document.getElementById(`body-${section}`);
   const arrow = document.getElementById(`arrow-${section}`);
-  body.classList.toggle("open");
-  arrow.classList.toggle("open");
+  if (body) body.classList.toggle("open");
+  if (arrow) arrow.classList.toggle("open");
 }
 
-// Download PDF
-async function downloadPDF() {
-  if (!sessionId) return;
-  try {
-    const res = await apiFetch(
-      `/consultation/report/${sessionId}/pdf`
-    );
-    if (!res) return;
-
-    if (res.status === 404) {
-      alert("PDF not yet generated. Please complete the full consultation first.");
-      return;
+async function downloadPDF(pdfUrl) {
+  if (!pdfUrl && reportData?.pdf_path) {
+    pdfUrl = reportData.pdf_path;
+  }
+  if (pdfUrl && pdfUrl.startsWith('http')) {
+    // For Cloudinary URLs, adding fl_attachment to the URL forces a download
+    let downloadUrl = pdfUrl;
+    if (pdfUrl.includes("cloudinary.com")) {
+      downloadUrl = pdfUrl.replace("/upload/", "/upload/fl_attachment/");
     }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
+    
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `SwasthyaAI_Report_${sessionId}.pdf`;
+    a.href = downloadUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    alert("Could not download PDF. Please try again.");
+    document.body.removeChild(a);
+    return;
+  } else {
+    if (!sessionId) return;
+    try {
+      const res = await apiFetch(`/consultation/report/${sessionId}/pdf`);
+      if (!res) return;
+
+      if (res.status === 404) {
+        alert("PDF not yet generated. Please complete the full consultation first.");
+        return;
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        if (data.url) {
+          let downloadUrl = data.url;
+          if (downloadUrl.includes("cloudinary.com")) {
+            downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");
+          }
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          return;
+        }
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `SwasthyaAI_Report_${sessionId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Could not download PDF. Please try again.");
+    }
   }
 }
 

@@ -54,7 +54,9 @@ def get_history(
             "primary_condition": primary_cond,
             "severity_flag": c.severity_flag or "mild",
             "status": c.status or "completed",
-            "pdf_available": True if c.pdf_path else False
+            "pdf_available": True if c.pdf_path else False,
+            "pdf_path": c.pdf_path or None
+
         })
         
     if condition:

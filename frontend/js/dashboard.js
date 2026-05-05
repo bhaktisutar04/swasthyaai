@@ -92,7 +92,7 @@ async function loadDashboard() {
     // Notifications
     renderNotifications(d.notifications);
 
-  } catch(err) {
+  } catch (err) {
     console.error("Dashboard error:", err);
     document.getElementById("consultation-content").innerHTML =
       `<div class="text-muted">Unable to load data. 
@@ -102,7 +102,9 @@ async function loadDashboard() {
 }
 
 function renderNutritionChart(labels, scores) {
-  const ctx = document.getElementById("nutrition-chart").getContext("2d");
+  const canvas = document.getElementById("nutrition-chart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
   if (nutritionChart) nutritionChart.destroy();
   nutritionChart = new Chart(ctx, {
     type: "line",
@@ -123,8 +125,10 @@ function renderNutritionChart(labels, scores) {
       responsive: true,
       plugins: { legend: { display: false } },
       scales: {
-        y: { min: 0, max: 100,
-             ticks: { callback: v => v + "%" } },
+        y: {
+          min: 0, max: 100,
+          ticks: { callback: v => v + "%" }
+        },
         x: { grid: { display: false } }
       }
     }
@@ -142,12 +146,12 @@ function renderNotifications(notifications) {
     <div class="notification-item">
       <div class="notif-icon">
         ${n.type === "follow_up" ? "👨⚕️" :
-          n.type === "refill" ? "💊" : "🔔"}
+      n.type === "refill" ? "💊" : "🔔"}
       </div>
       <div>
         <div class="notif-message">${n.message}</div>
         ${n.due_date ?
-          `<div class="notif-date">Due: ${formatDate(n.due_date)}</div>` : ""}
+      `<div class="notif-date">Due: ${formatDate(n.due_date)}</div>` : ""}
       </div>
     </div>
   `).join("");
@@ -155,4 +159,3 @@ function renderNotifications(notifications) {
 
 // Load dashboard data
 loadDashboard();
-

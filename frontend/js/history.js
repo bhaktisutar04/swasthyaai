@@ -5,22 +5,9 @@ document.getElementById("bottom-nav").innerHTML = renderBottomNav("history");
 let allConsultations = [];
 let currentPage = 1;
 let totalPages = 1;
-let nutritionTrendChart = null;
-let expenseTrendChart = null;
 
-// Tab switching
-function switchTab(tab) {
-  document.getElementById("timeline-section").style.display =
-    tab === "timeline" ? "block" : "none";
-  document.getElementById("trends-section").style.display =
-    tab === "trends" ? "block" : "none";
-  document.getElementById("tab-timeline").className =
-    "tab" + (tab === "timeline" ? " active" : "");
-  document.getElementById("tab-trends").className =
-    "tab" + (tab === "trends" ? " active" : "");
 
-  if (tab === "trends") loadTrends();
-}
+
 
 // Load consultation history
 async function loadHistory(reset = true) {
@@ -64,7 +51,7 @@ async function loadHistory(reset = true) {
       document.getElementById("load-more-btn").style.display =
         currentPage < totalPages ? "block" : "none";
     }
-  } catch(err) {
+  } catch (err) {
     console.error("History load error:", err);
     document.getElementById("timeline-list").innerHTML = `
       <div class="empty-state">
@@ -130,11 +117,11 @@ function renderTimeline(consultations) {
             ${statusLabels[c.status] || c.status}
           </span>
           ${c.severity_flag ?
-            `<span class="badge ${severityClass}">
+        `<span class="badge ${severityClass}">
               ${c.severity_flag}
             </span>` : ""}
           ${c.pdf_available ?
-            `<span class="badge badge-success">📄 PDF Ready</span>` : ""}
+        `<span class="badge badge-success">📄 PDF Ready</span>` : ""}
         </div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-primary btn-sm"
@@ -142,8 +129,8 @@ function renderTimeline(consultations) {
             View Report →
           </button>
           ${c.pdf_available ?
-            `<button class="btn btn-outline btn-sm"
-                     onclick="downloadPDF('${c.consultation_id}')">
+        `<button class="btn btn-outline btn-sm"
+                     onclick="downloadPDF('${c.pdf_path || c.consultation_id}')">
               📥 PDF
             </button>` : ""}
         </div>
@@ -181,122 +168,67 @@ function viewReport(consultationId) {
 }
 
 // Download PDF
-async function downloadPDF(consultationId) {
-  try {
-    const res = await apiFetch(
-      `/consultation/report/${consultationId}/pdf`
-    );
-    if (!res) return;
-    if (res.status === 404) {
-      alert("PDF not available for this consultation.");
-      return;
+async function downloadPDF(pdfUrl) {
+  if (pdfUrl && pdfUrl.startsWith('http')) {
+    // For Cloudinary URLs, adding fl_attachment to the URL forces a download
+    let downloadUrl = pdfUrl;
+    if (pdfUrl.includes("cloudinary.com")) {
+      downloadUrl = pdfUrl.replace("/upload/", "/upload/fl_attachment/");
     }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
+    
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `SwasthyaAI_Report_${consultationId}.pdf`;
+    a.href = downloadUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
-  } catch(err) {
-    alert("Could not download PDF.");
+    document.body.removeChild(a);
+  } else {
+    // Internal API endpoint - use apiFetch
+    try {
+      const res = await apiFetch(
+        `/consultation/report/${pdfUrl}/pdf`
+      );
+      if (!res) return;
+      if (res.status === 404) {
+        alert("PDF not available for this consultation.");
+        return;
+      }
+
+      // Check if response is JSON (contains Cloudinary URL)
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        if (data.url) {
+          let downloadUrl = data.url;
+          if (downloadUrl.includes("cloudinary.com")) {
+            downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");
+          }
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          return;
+        }
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `SwasthyaAI_Report_${pdfUrl}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Could not download PDF.");
+    }
   }
 }
 
-// Load trend charts
-async function loadTrends() {
-  const range = document.getElementById("trend-range").value;
 
-  try {
-    // Nutrition trends
-    const nutRes = await apiFetch(
-      `/history/analytics/nutrition?range=${range}`
-    );
-    if (nutRes) {
-      const nutData = await nutRes.json();
-      if (nutData.success) {
-        renderNutritionTrendChart(nutData.data);
-        document.getElementById("nutrition-trend-summary").textContent =
-          `Current Score: ${nutData.data.current_score}% • ` +
-          `Change vs last week: ${nutData.data.change_vs_last_week > 0 ?
-            '+' : ''}${nutData.data.change_vs_last_week}%`;
-      }
-    }
-
-    // Expense trends
-    const expRes = await apiFetch(
-      `/history/analytics/expenses?range=${range}`
-    );
-    if (expRes) {
-      const expData = await expRes.json();
-      if (expData.success) {
-        renderExpenseTrendChart(expData.data);
-        document.getElementById("expense-trend-summary").textContent =
-          `Current Month: ${formatRupee(expData.data.current_month)} • ` +
-          `Trend: ${expData.data.trend}`;
-      }
-    }
-  } catch(err) {
-    console.error("Trends load error:", err);
-  }
-}
-
-function renderNutritionTrendChart(data) {
-  const ctx = document.getElementById("nutrition-trend-chart")
-    .getContext("2d");
-  if (nutritionTrendChart) nutritionTrendChart.destroy();
-  nutritionTrendChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: data.labels || [],
-      datasets: [{
-        label: "Nutrition Score",
-        data: data.scores || [],
-        borderColor: "#1E8E3E",
-        backgroundColor: "rgba(30,142,62,0.08)",
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: "#1E8E3E",
-        pointRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { min: 0, max: 100,
-             ticks: { callback: v => v + "%" } },
-        x: { grid: { display: false } }
-      }
-    }
-  });
-}
-
-function renderExpenseTrendChart(data) {
-  const ctx = document.getElementById("expense-trend-chart")
-    .getContext("2d");
-  if (expenseTrendChart) expenseTrendChart.destroy();
-  expenseTrendChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: data.labels || [],
-      datasets: [{
-        label: "Monthly Expenses",
-        data: data.totals || [],
-        backgroundColor: "rgba(26,115,232,0.7)",
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { callback: v => "₹" + v } },
-        x: { grid: { display: false } }
-      }
-    }
-  });
-}
 
 // Initial load
 loadHistory();

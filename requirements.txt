@@ -1,27 +1,32 @@
-numpy --only-binary=:all:
-#tiktoken==0.7.0
+# Pin exact versions to avoid dependency conflicts
+numpy==1.26.4
+crewai==0.28.0
+langchain==0.1.20
+langchain-groq==0.1.9
+langchain-community==0.0.38
+langchain-core==0.1.53
+
 # API and Validation
-fastapi
-uvicorn[standard]
-pydantic
-pydantic[email]
-python-multipart
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+pydantic==2.7.1
+pydantic[email]==2.7.1
+python-multipart==0.0.9
 
 # Database and Storage
-sqlalchemy
-psycopg2-binary
-pinecone
-cloudinary
-# Authentication
-python-jose[cryptography]
-bcrypt
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+pinecone-client==3.2.2
+cloudinary==1.40.0
 
-# AI Orchestration and LLMs
-crewai
-crewai-tools
-langchain-groq
-groq
-# Utilities and Utilities
-python-dotenv
-requests
-reportlab
+# Authentication
+python-jose[cryptography]==3.3.0
+bcrypt==4.1.3
+
+# AI
+groq==0.8.0
+
+# Utilities
+python-dotenv==1.0.1
+requests==2.31.0
+reportlab==4.1.0

@@ -137,7 +137,7 @@ def get_dashboard(current_user: User = Depends(get_current_user), db: Session = 
         # 4. Notifications
         db_notifs = db.query(Notification).filter(
             Notification.user_id == current_user.id,
-            Notification.is_read == False
+            Notification.is_read == 0
         ).order_by(Notification.created_at.desc()).limit(5).all()
         
         for n in db_notifs:

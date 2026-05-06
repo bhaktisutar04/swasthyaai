@@ -1,4 +1,5 @@
-const API_BASE = "https://swasthyaai-backend.onrender.com";
+const API_BASE = "https://swasthyaai-nkvc.onrender.com";
+//const API_BASE = "https://swasthyaai-backend.onrender.com";
 //const API_BASE = "http://localhost:8000";
 function getToken() {
   return localStorage.getItem("access_token");
